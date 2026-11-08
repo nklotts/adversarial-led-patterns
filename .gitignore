@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Experiment output
+checkpoints/
+logs/
+dataset/
+runs/
+
+# Detector weights (downloaded automatically by ultralytics on first use)
+*.pt
+
+# Editor and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

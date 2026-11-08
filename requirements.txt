@@ -1,0 +1,16 @@
+# Direct dependencies, pinned to the versions used for the reported experiments.
+# Transitive dependencies are resolved by pip.
+#
+# The CUDA build of PyTorch is not on PyPI. Install it first, matching the
+# CUDA toolkit on the training host, for example:
+#
+#   pip install torch==2.5.1 torchvision==0.20.1 \
+#       --index-url https://download.pytorch.org/whl/cu121
+#
+# Then:  pip install -r requirements.txt
+
+numpy==1.24.3
+opencv-python==4.13.0.92
+torch==2.5.1
+torchvision==0.20.1
+ultralytics==8.0.200
