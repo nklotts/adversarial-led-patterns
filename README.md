@@ -183,7 +183,7 @@ All three directories are ignored by git.
 ```bibtex
 @inproceedings{zyryanov2026dynamic,
   title     = {Dynamic Physical Adversarial {LED} Patterns via Reinforcement Learning},
-  author    = {Zyryanov, Konstantin and Lotts, Nikita},
+  author    = {Konstantin Zyryanov and Nikita Lotts},
   booktitle = {Advances in Neural Information Processing Systems 40 (NeurIPS 2026)},
   year      = {2026}
 }

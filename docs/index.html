@@ -142,54 +142,13 @@
       metrics, environmental generalization and training stability.
     </p>
 
-    <div class="threeline reveal" style="margin-top:38px">
-      <div class="threeline__row">
-        <div class="threeline__k">Setting</div>
-        <div class="threeline__v">Closed-loop physical adversarial control — a policy changes a wearable LED array based on what its cameras see.</div>
-      </div>
-      <div class="threeline__row">
-        <div class="threeline__k">Approach</div>
-        <div class="threeline__v"><strong>PR-SAC</strong> — Physically Regularized Soft Actor-Critic with latent actions and structured upsampling.</div>
-      </div>
-      <div class="threeline__row">
-        <div class="threeline__k">Finding</div>
-        <div class="threeline__v"><strong>89.1 / 84.7 / 86.8 %</strong> attack success on YOLOv8 / Faster R-CNN / RetinaNet — <strong>+38–42 pp</strong> over the best static pattern.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ======================= MOTIVATION ======================= -->
-<section class="band-alt" id="motivation">
-  <div class="wrap">
-    <p class="eyebrow">Motivation</p>
-    <h2 class="sec-title">Everything before this was optimized once, then printed.</h2>
-    <p class="lede">
-      Automated person detection is now routine in video surveillance, access control and scene
-      monitoring. That raises a concrete question on both sides of the problem: how reliable are
-      these systems against perturbations that adapt, and what can someone who does not consent to
-      being tracked actually do about it? Physical adversarial attacks are the standard way to probe
-      the first question, and the standing assumption in that literature is that the perturbation
-      holds still.
+    <p class="lede" style="margin-top:22px;margin-bottom:32px">
+      Automated person detection is now routine in surveillance, access control and scene monitoring,
+      which raises the question from both sides: how reliable are these systems against perturbations
+      that adapt, and what recourse does someone who has not consented to being tracked actually have?
+      Printed patches, adversarial T-shirts and camouflage textures are all optimized once and then
+      fixed. Light, distance and viewing angle keep changing. The pattern doesn't.
     </p>
-    <p class="lede" style="margin-bottom:32px">
-      Light, distance and viewing angle keep changing. The pattern doesn't.
-    </p>
-
-    <div class="prior reveal">
-      <div class="prior__item">
-        <h3>Printed patches</h3>
-        <span>Thys et al., 2019</span>
-      </div>
-      <div class="prior__item">
-        <h3>Adversarial T-shirts</h3>
-        <span>Xu et al., 2020</span>
-      </div>
-      <div class="prior__item">
-        <h3>Camouflage textures</h3>
-        <span>Hu et al., 2022</span>
-      </div>
-    </div>
 
     <div class="callout reveal">
       <p class="eyebrow">Our question</p>
@@ -199,14 +158,14 @@
 </section>
 
 <!-- ======================= TESTBED ======================= -->
-<section id="testbed">
+<section class="band-alt" id="testbed">
   <div class="wrap">
     <p class="eyebrow">Testbed</p>
     <h2 class="sec-title">A wearable array of 9,984 RGB LEDs</h2>
 
-    <div class="split" style="margin-top:34px">
+    <div style="margin-top:34px">
       <div>
-        <div class="spec-grid reveal">
+        <div class="spec-grid reveal" style="grid-template-columns:repeat(4,minmax(0,1fr))">
           <div class="spec">
             <div class="spec__v">39 × 16²</div>
             <div class="spec__k">LED panels of 16 × 16 addressable diodes</div>
@@ -226,23 +185,16 @@
         </div>
 
         <ul class="bullets reveal">
-          <li>Two <strong>onboard cameras</strong>, front and back, capture the surrounding scene — this is what the policy observes. They are sensors, not evaluation cameras.</li>
-          <li>A separate <strong>external camera</strong> records the illuminated garment and feeds the target detector — this is what the attack is scored on.</li>
-          <li>The separation lets the policy condition on the environment while attack performance is measured independently.</li>
+          <li>Two <strong>onboard cameras</strong>, front and back, are what the policy observes — sensors, not evaluation cameras.</li>
+          <li>A separate <strong>external camera</strong> feeds the target detector, so attack performance is measured independently of what the policy sees.</li>
         </ul>
       </div>
-
-      <figure class="fig reveal">
-        <img src="assets/img/jacket-front.jpg" width="579" height="581" loading="lazy"
-             alt="Front view of the LED garment: a dark jacket densely covered with square LED panels.">
-        <figcaption><b>Figure 1.</b> Real-world adversarial setup. A programmable LED garment, driven by an Orange Pi controller, is captured by an external detector camera while onboard cameras provide observations for the RL agent.</figcaption>
-      </figure>
     </div>
   </div>
 </section>
 
 <!-- ======================= FORMULATION ======================= -->
-<section class="band-alt" id="formulation">
+<section id="formulation">
   <div class="wrap">
     <p class="eyebrow">Formulation</p>
     <h2 class="sec-title">The attack as a closed-loop RL problem</h2>
@@ -250,7 +202,7 @@
     <figure class="fig fig--wide reveal" style="margin-top:30px">
       <img src="assets/img/pipeline.png" width="1400" height="726" loading="lazy"
            alt="Pipeline diagram: the PR-SAC agent produces a latent action, the Orange Pi decodes and upsamples it onto the LED matrix, the physical scene is captured by an external detector camera, the detector returns a confidence, and the reward updates the policy.">
-      <figcaption><b>Figure 2.</b> Closed-loop physical adversarial optimization pipeline. A PR-SAC agent generates LED control actions, which are executed by the Orange Pi controller and rendered on the wearable LED matrix. The camera captures the resulting scene, the detector outputs confidence, and the reward is used to update the policy.</figcaption>
+      <figcaption><b>Figure 2.</b> The closed loop. PR-SAC emits an action, the controller renders it on the garment, a separate camera captures the scene, and the detector's confidence becomes the reward.</figcaption>
     </figure>
 
     <div class="split split--even" style="margin-top:34px">
@@ -262,56 +214,21 @@
           <span class="op">+</span> <span class="lam">λ</span><sub>temp</sub> <span class="op">·</span> ‖<span class="v">a</span><sub>t</sub> <span class="op">−</span> <span class="v">a</span><sub>t−1</sub>‖<sup>2</sup>
         </div>
         <p class="note">
-          The first term drives detector confidence down; the auxiliary terms encourage action diversity and
-          temporal variation. Written as a stochastic physical composition,
-          <i>r</i><sub>t</sub> = <i>g</i>(<i>D</i>(<i>R</i>(<i>a</i><sub>t</sub>, θ<sub>t</sub>))) + ξ<sub>t</sub>,
-          where <i>R</i> is physical rendering, <i>D</i> the detector and ξ<sub>t</sub> measurement noise.
+          The first term drives detector confidence down; the auxiliary terms reward diversity and temporal
+          variation. The whole reward is a stochastic physical composition — rendering, then detection, then
+          measurement noise — which is what makes it non-stationary.
         </p>
       </div>
 
       <div class="card card--rule reveal">
         <span class="card__kicker">Threat model</span>
-        <ul class="bullets" style="margin-top:0">
-          <li><strong>Black-box.</strong> No gradients, no detector weights, no access to the evaluation camera or digital inputs.</li>
-          <li><strong>During training.</strong> Detector confidence only, plus observations from the two onboard cameras.</li>
-          <li><strong>At test time.</strong> The learned policy generates patterns from onboard observations alone — no detector feedback.</li>
-        </ul>
+        <p>
+          <strong>Black-box throughout.</strong> No gradients, no detector weights, no access to the
+          evaluation camera. Training sees detector confidence and the two onboard cameras; at test time
+          the policy generates patterns from onboard observations alone, with no detector feedback at all.
+        </p>
         <span class="ref">Section 3.3</span>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- ======================= CHALLENGE ======================= -->
-<section id="challenge">
-  <div class="wrap">
-    <p class="eyebrow">Challenge</p>
-    <h2 class="sec-title">Why RL is unstable in the physical loop</h2>
-
-    <div class="split" style="margin-top:34px">
-      <div class="grid grid--3 reveal" style="grid-template-columns:1fr">
-        <div class="card">
-          <h3>Noisy reward</h3>
-          <p>Sensor noise and measurement noise ride on every detector score.</p>
-        </div>
-        <div class="card">
-          <h3>Drifting scene</h3>
-          <p>Pose, light and distance change, so the Bellman operator becomes time-dependent.</p>
-        </div>
-        <div class="card">
-          <h3>Replay mismatch</h3>
-          <p>Old transitions no longer match the current policy or the current scene.</p>
-        </div>
-        <p class="lede" style="font-size:17px;margin-top:4px">
-          <strong>→ Q-drift, entropy collapse, and degradation after the peak.</strong>
-        </p>
-      </div>
-
-      <figure class="fig reveal">
-        <img src="assets/img/fig-training.png" width="801" height="420" loading="lazy"
-             alt="Detection confidence against training episode for RetinaNet, Faster R-CNN and YOLO: confidence drops to roughly 0.40–0.47 between episodes 350 and 700, then climbs back toward 0.60–0.65 by episode 2000.">
-        <figcaption><b>Figure 4a.</b> Detection confidence over training, averaged across 15 independent runs. The best attack phase sits around episodes 350–700; after that, performance degrades.</figcaption>
-      </figure>
     </div>
   </div>
 </section>
@@ -321,6 +238,12 @@
   <div class="wrap">
     <p class="eyebrow">Method</p>
     <h2 class="sec-title">PR-SAC: three fixes on top of Soft Actor-Critic</h2>
+    <p class="lede">
+      Off-policy RL destabilizes in a physical loop for three reasons: every detector score carries sensor
+      noise, the scene drifts so the Bellman operator becomes time-dependent, and replayed transitions stop
+      matching the current policy. The result is Q-drift, entropy collapse and degradation after the peak.
+      Each fix targets one cause.
+    </p>
 
     <div class="steps reveal" style="margin-top:34px">
       <div class="step">
@@ -371,7 +294,7 @@
       <div class="chain__node"><b>9,984-LED pattern</b><span>rendered on the garment</span></div>
     </div>
 
-    <div class="split split--even" style="margin-top:30px">
+    <div style="margin-top:30px">
       <div class="card reveal">
         <span class="card__kicker">Final detection confidence — lower is a stronger attack</span>
         <div class="bars">
@@ -389,16 +312,12 @@
           </div>
         </div>
         <p class="note">
-          Degradation after the peak falls along with it: 0.19 → 0.18 → 0.13.
-          <span class="ref">Table 1, mean over 15 runs</span>
+          Degradation after the peak falls along with it: 0.19 → 0.18 → 0.13. The upsampling factor itself
+          trades detail for stability — low factors keep high-frequency detail but are unstable, high ones
+          over-smooth, and an intermediate factor is best.
+          <span class="ref">Table 1 and Figure 4b, mean over 15 runs</span>
         </p>
       </div>
-
-      <figure class="fig reveal">
-        <img src="assets/img/fig-upsampling.png" width="798" height="416" loading="lazy"
-             alt="Detection confidence against upsampling factor from 4 to 64: confidence falls steadily from about 0.80 at factor 4 to roughly 0.40–0.47 at factor 64.">
-        <figcaption><b>Figure 4b.</b> The upsampling factor trades detail for stability — low factors preserve high-frequency detail but are unstable, high factors enforce smoothness at some cost in attack strength.</figcaption>
-      </figure>
     </div>
   </div>
 </section>
@@ -416,9 +335,8 @@
     <div class="table-wrap reveal" style="margin-top:30px">
       <table class="data">
         <caption>
-          <b>Table 2.</b> Attack success rate (ASR, %) for static and dynamic LED control. Mean ± standard
-          deviation over 15 independent runs, 300 evaluation frames each; higher is better.
-          <em>Unseen</em> denotes evaluation in locations excluded from training.
+          <b>Table 2.</b> Attack success rate (%), higher is better. <em>Unseen</em> means locations
+          excluded from training.
         </caption>
         <thead>
           <tr>
@@ -455,39 +373,25 @@
     <h2 class="sec-title">New locations: weaker, but still strong</h2>
     <p class="lede">
       Trained policies evaluated without fine-tuning in locations excluded from training — new backgrounds,
-      geometry and illumination. Attack success drops, yet stays above every static baseline measured in
-      <em>familiar</em> conditions (≤ 50.8 %).
+      geometry and illumination. Attack success falls from 89.1 / 84.7 / 86.8 % to
+      <strong>77.3 / 69.8 / 74.5 %</strong>, still above every static baseline measured in <em>familiar</em>
+      conditions (≤ 50.8 %).
     </p>
 
-    <div class="deltas reveal" style="margin-top:32px">
-      <div class="dtile">
-        <div class="dtile__name">YOLOv8</div>
-        <div class="dtile__row"><span class="dtile__from">89.1%</span><span class="dtile__arrow">→</span><span class="dtile__to">77.3%</span></div>
-      </div>
-      <div class="dtile">
-        <div class="dtile__name">Faster R-CNN</div>
-        <div class="dtile__row"><span class="dtile__from">84.7%</span><span class="dtile__arrow">→</span><span class="dtile__to">69.8%</span></div>
-      </div>
-      <div class="dtile">
-        <div class="dtile__name">RetinaNet</div>
-        <div class="dtile__row"><span class="dtile__from">86.8%</span><span class="dtile__arrow">→</span><span class="dtile__to">74.5%</span></div>
-      </div>
-    </div>
-
-    <div class="grid grid--2 reveal" style="margin-top:26px">
+    <div class="grid grid--2 reveal" style="margin-top:30px">
       <figure class="fig">
         <img src="assets/img/fig-distance.png" width="857" height="413" loading="lazy"
              alt="Detection confidence against camera distance from 1 to 5 metres. Baselines stay near 0.95; under attack, confidence dips to about 0.40–0.47 at 2–3 metres and rises again toward 0.70–0.79 at 5 metres.">
-        <figcaption><b>Figure 5a.</b> Confidence vs. camera distance (1–5 m). The attack is strongest at 2–3 m and weakens as the garment occupies less of the frame.</figcaption>
+        <figcaption><b>Figure 5a.</b> Distance (1–5 m). Strongest at 2–3 m; weaker as the garment shrinks in frame.</figcaption>
       </figure>
       <figure class="fig">
         <img src="assets/img/fig-angle.png" width="760" height="413" loading="lazy"
              alt="Detection confidence against camera angle from 0 to 60 degrees. Baselines stay near 0.92; under attack, confidence rises from about 0.40–0.47 head-on to roughly 0.68–0.75 at 60 degrees.">
-        <figcaption><b>Figure 5b.</b> Confidence vs. viewing angle (0–60°). Effectiveness falls off with geometric distortion of the visible LED area.</figcaption>
+        <figcaption><b>Figure 5b.</b> Viewing angle (0–60°). Falls off as the visible LED area distorts.</figcaption>
       </figure>
     </div>
 
-    <p class="note">These results support partial environmental generalization; they do not establish robustness under arbitrary outdoor or sensor conditions. <span class="ref">Section 5.1, Figure 5</span></p>
+    <p class="note">Partial environmental generalization — not robustness under arbitrary outdoor or sensor conditions. <span class="ref">Section 5.1</span></p>
   </div>
 </section>
 
@@ -497,13 +401,13 @@
     <p class="eyebrow">Transferability</p>
     <h2 class="sec-title">Patterns partially transfer across detectors</h2>
 
-    <div class="split" style="margin-top:30px">
+    <div style="margin-top:30px">
       <div>
         <div class="table-wrap reveal">
           <table class="data heat">
             <caption>
-              <b>Table 3.</b> Cross-model transferability. Cells are mean detection confidence over 15 runs —
-              darker means lower confidence and a stronger attack. With no attack, confidence sits at 0.92–0.96.
+              <b>Table 3.</b> Cross-model transferability. Cells are mean detection confidence; darker is a
+              stronger attack.
             </caption>
             <thead>
               <tr>
@@ -536,17 +440,9 @@
           </table>
         </div>
         <div class="legend"><span>weaker</span><span class="legend__scale" aria-hidden="true"></span><span>stronger attack</span></div>
-      </div>
-
-      <div class="grid reveal">
-        <div class="card card--rule">
-          <h3>Strongest on the training detector</h3>
-          <p>Diagonal: 0.40 / 0.47 / 0.43 — the attack is tuned to the detector it was optimized against.</p>
-        </div>
-        <div class="card card--rule">
-          <h3>Still effective elsewhere</h3>
-          <p>Off-diagonal confidence of 0.48–0.56, against 0.92–0.96 with no attack at all.</p>
-        </div>
+        <p class="note">
+          Diagonal 0.40 / 0.47 / 0.43; off-diagonal 0.48–0.56, against 0.92–0.96 with no attack.
+        </p>
       </div>
     </div>
   </div>
@@ -558,15 +454,15 @@
     <p class="eyebrow">Defenses</p>
     <h2 class="sec-title">Dedicated defenses help; none removes the attack</h2>
     <p class="lede">
-      Generic transformations leave substantial residual evasion. Defenses built for physical attacks do
-      markedly better, but RAPID — the strongest we tested — still leaves 17.6–29.8 % attack success.
+      Generic transformations leave substantial residual evasion. Purpose-built physical-attack filters do
+      markedly better, but RAPID — the strongest tested — still leaves 17.6–29.8 % attack success.
     </p>
 
     <div class="table-wrap reveal" style="margin-top:30px">
       <table class="data">
         <caption>
-          <b>Table 8.</b> Effect of input-processing defenses on PR-SAC. Each entry reports ASR (%) and mean
-          detector confidence, on the same evaluation frames. Lower ASR and higher confidence mean a stronger defense.
+          <b>Table 8.</b> Input-processing defenses, on the same evaluation frames. Lower ASR means a
+          stronger defense.
         </caption>
         <thead>
           <tr>
@@ -595,39 +491,25 @@
     <p class="eyebrow">Stability</p>
     <h2 class="sec-title">Entropy collapse is delayed, not removed</h2>
     <p class="lede">
-      Both the entropy coefficient and the action variance decay over training. PR-SAC pushes the collapse
-      later, but does not eliminate it — and the collapse coincides with the degradation phase. Checkpoints
-      are therefore selected by minimum mean confidence on a held-out validation sequence.
+      The entropy coefficient α falls from about 1.0 to 0.04 over a run, and action variance peaks near
+      episode 700 before collapsing. PR-SAC pushes that collapse later but does not eliminate it, and it
+      coincides with the degradation phase below. Checkpoints are therefore selected by minimum mean
+      confidence on a held-out validation sequence — never the final one.
     </p>
 
-    <div class="grid grid--2 reveal" style="margin-top:28px">
-      <figure class="fig">
-        <img src="assets/img/fig-entropy.png" width="773" height="420" loading="lazy"
-             alt="Entropy coefficient alpha on a logarithmic scale against training episode: it falls from about 1.0 to roughly 0.04 by episode 2000, with an exploration phase up to episode 700 and an entropy collapse phase after it.">
-        <figcaption><b>Figure 6a.</b> Entropy coefficient α over training episodes.</figcaption>
-      </figure>
-      <figure class="fig">
-        <img src="assets/img/fig-variance.png" width="760" height="420" loading="lazy"
-             alt="Action variance against training episode: it rises from about 0.004 to a peak of roughly 0.065 near episode 700, then falls back to about 0.011 by episode 2000.">
-        <figcaption><b>Figure 6b.</b> Action variance over training episodes — peak exploration around episode 700.</figcaption>
-      </figure>
-    </div>
+    <figure class="fig reveal" style="margin-top:28px">
+      <img src="assets/img/fig-training.png" width="801" height="420" loading="lazy"
+           alt="Detection confidence against training episode for RetinaNet, Faster R-CNN and YOLO: confidence drops to roughly 0.40–0.47 between episodes 350 and 700, then climbs back toward 0.60–0.65 by episode 2000.">
+      <figcaption><b>Figure 4a.</b> Detection confidence over training. The best attack phase sits around episodes 350–700; after that, performance degrades.</figcaption>
+    </figure>
 
-    <div class="grid grid--3 reveal" style="margin-top:26px">
-      <div class="card">
-        <span class="card__kicker">Protocol · ASR</span>
-        <p>Percentage of frames with no person detection matching the ground-truth box at IoU ≥ 0.5 and confidence ≥ 0.6.</p>
-      </div>
-      <div class="card">
-        <span class="card__kicker">Protocol · Statistics</span>
-        <p>15 independent seeds × 300 evaluation frames. Run-level mean, standard deviation and 95 % Student-<i>t</i> confidence intervals.</p>
-      </div>
-      <div class="card">
-        <span class="card__kicker">Protocol · Training</span>
-        <p>2,000 episodes of roughly 10–12 s each — about 5–6 hours per run.</p>
-      </div>
-    </div>
-    <p class="note">An operator varies pose, viewpoint, distance and illumination under a shared randomization schedule. <span class="ref">Section 4.5</span></p>
+    <p class="note">
+      <strong>Protocol.</strong> ASR is the percentage of frames with no person detection matching the
+      ground-truth box at IoU ≥ 0.5 and confidence ≥ 0.6. Every number on this page is a mean over
+      15 independent seeds × 300 evaluation frames, with 95 % Student-<i>t</i> intervals; each run is
+      2,000 episodes of roughly 10–12 s, about 5–6 hours. An operator varies pose, viewpoint, distance
+      and illumination on a schedule shared by every compared method. <span class="ref">Section 4.5</span>
+    </p>
   </div>
 </section>
 
@@ -637,27 +519,13 @@
     <p class="eyebrow">Limitations &amp; impact</p>
     <h2 class="sec-title">What this does not show</h2>
 
-    <div class="grid grid--2 reveal" style="margin-top:28px">
-      <div class="card">
-        <h3>Limitations</h3>
-        <p>
-          Three person detectors and a single wearable LED platform. Performance depends on lighting, viewpoint,
-          distance and camera characteristics; unseen-location results do not establish robustness under
-          uncontrolled conditions. Other target classes, other actuators, adversarially trained detectors and
-          certified defenses remain untested. Training is unstable and takes roughly 5–6 hours per run.
-        </p>
-      </div>
-      <div class="card">
-        <h3>Broader impact</h3>
-        <p>
-          This work studies vulnerabilities of computer vision systems under physically realizable adaptive
-          attacks. Such methods could be misused to evade surveillance or safety-critical perception systems;
-          our goal is to improve robustness evaluation under realistic physical conditions. By analyzing
-          transferability, environmental robustness and defense interaction, we aim to support the development
-          of more reliable vision models.
-        </p>
-      </div>
-    </div>
+    <p class="lede" style="margin-top:4px">
+      Three person detectors and one wearable LED platform. Unseen-location results do not establish
+      robustness under uncontrolled conditions, and other target classes, other actuators, adversarially
+      trained detectors and certified defenses remain untested. Training is unstable. Adaptive physical
+      attacks could be misused against surveillance or safety-critical perception; our aim is the opposite —
+      better robustness evaluation under realistic physical conditions.
+    </p>
 
     <div class="ethics reveal">
       <h3>Responsible release</h3>
@@ -676,16 +544,10 @@
       <button class="bib__copy" id="copyBib" type="button" data-label="Copy">Copy</button>
 <pre id="bibtex">@inproceedings<span class="k">{</span>zyryanov2026dynamic,
   title     = <span class="s">{Dynamic Physical Adversarial {LED} Patterns via Reinforcement Learning}</span>,
-  author    = <span class="s">{Zyryanov, Konstantin and Lotts, Nikita}</span>,
+  author    = <span class="s">{Konstantin Zyryanov and Nikita Lotts}</span>,
   booktitle = <span class="s">{Advances in Neural Information Processing Systems 40 (NeurIPS 2026)}</span>,
   year      = <span class="s">{2026}</span>
 <span class="k">}</span></pre>
-    </div>
-
-    <div class="btns" style="margin-top:26px">
-      <a class="btn btn--light" href="assets/zyryanov-lotts-neurips2026-dynamic-led-adversarial.pdf">Paper (PDF)</a>
-      <a class="btn btn--light" href="assets/zyryanov-lotts-neurips2026-slides.pptx">Slides (PPTX)</a>
-      <a class="btn btn--light" href="https://github.com/nklotts/adversarial-led-patterns">Code repository</a>
     </div>
   </div>
 </section>
@@ -695,23 +557,10 @@
 <!-- ======================= FOOTER ======================= -->
 <footer class="footer">
   <div class="wrap">
-    <div class="footer__grid">
-      <div>
-        <p class="eyebrow" style="color:var(--accent-soft)">Takeaway</p>
-        <h2>Adaptive physical attacks are much stronger than static ones.</h2>
-        <p>Robustness evaluations should include them — along with environmental generalization and training stability.</p>
-      </div>
-      <ul class="footer__links">
-        <li><a href="assets/zyryanov-lotts-neurips2026-dynamic-led-adversarial.pdf">Paper (PDF)</a></li>
-        <li><a href="assets/zyryanov-lotts-neurips2026-slides.pptx">Slides (PPTX)</a></li>
-        <li><a href="https://github.com/nklotts/adversarial-led-patterns">Code on GitHub</a></li>
-        <li><a href="mailto:zyryanov.konstantin.sergeevich@gmail.com">Konstantin Zyryanov</a></li>
-        <li><a href="mailto:nklotts@edu.hse.ru">Nikita Lotts</a></li>
-      </ul>
-    </div>
+    <p class="eyebrow" style="color:var(--accent-soft)">Takeaway</p>
+    <h2>Adaptive physical attacks are much stronger than static ones.</h2>
+    <p>Robustness evaluations should include them — along with environmental generalization and training stability.</p>
     <div class="footer__bar">
-      <span>Konstantin Zyryanov · Nikita Lotts</span>
-      <span>Lomonosov Moscow State University · HSE University</span>
       <span>40th Conference on Neural Information Processing Systems (NeurIPS 2026)</span>
     </div>
   </div>
